@@ -9,7 +9,7 @@ st.title("📊 Reporte Diario de Flota")
 st.subheader("Control de Viajes, Diésel y Madera en Vivo")
 st.write("---")
 
-EXCEL_PATH = "Control.xlsx"
+EXCEL_PATH = "control.xlsx"
 PRECIO_DIESEL_BS = 18.00  # <--- PRECIO ACTUAL DEL DIÉSEL EN BOLIVIA
 
 def cargar_datos():
