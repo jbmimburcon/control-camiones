@@ -39,7 +39,7 @@ with st.form("formulario_viaje", clear_on_submit=True):
     
     st.write("---")
     st.subheader("Datos del Viaje")
-    codigo_cefo = st.text_input("Código CEFO de la Madera (Si fue vacío, ponga N/A):", value="N/A")
+    codigo_cefo = st.text_input("Código CFO de la Madera (Si fue vacío, ponga N/A):", value="N/A")
     volumen_m3 = st.number_input("Volumen Métrico Transportado (m³):", min_value=0.0, step=0.1)
     distancia_km = st.number_input("Distancia del Viaje según Camioneta (Km):", min_value=0.0, step=1.0)
     diesel_litros = st.number_input("Litros de Diésel Cargados en Viaje:", min_value=0.0, step=1.0)
