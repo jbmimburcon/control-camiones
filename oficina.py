@@ -7,7 +7,7 @@ import os
 ASIGNACION_FLOTA = {
     "2447 CIN": "PEDRO FERNANDEZ",
     "432 AIL": "JUAN CALIXTO",
-    "1156 FER": "RAMIRO FERNÁNDEZ",
+    "1156 FER": " RAMIRO FERNÁNDEZ",
     "472 PXA (Sin Chofer)": "CHOFER TEMPORAL / N/A",
     "MERCEDES ROJO (Sin Placa)": "CHOFER TEMPORAL / N/A"
 }
@@ -41,7 +41,7 @@ with st.form("formulario_viaje", clear_on_submit=True):
     st.subheader("Datos del Viaje")
     codigo_cefo = st.text_input("Código CFO de la Madera (Si fue vacío, ponga N/A):", value="N/A")
     volumen_m3 = st.number_input("Volumen Métrico Transportado (m³):", min_value=0.0, step=0.1)
-    distancia_km = st.number_input("Distancia del Viaje según Camioneta (Km):", min_value=0.0, step=1.0)
+    distancia_km = st.number_input("Distancia  (Km):", min_value=0.0, step=1.0)
     diesel_litros = st.number_input("Litros de Diésel Cargados en Viaje:", min_value=0.0, step=1.0)
     
     observaciones = st.text_input("Observaciones o Ruta:", value="Sin novedad")
