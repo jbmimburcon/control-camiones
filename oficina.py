@@ -3,11 +3,11 @@ import pandas as pd
 from datetime import datetime
 import os
 
-# 1. BASE DE DATOS REAL DE TU FLOTA (Placas y Choferes)
+# 1. BASE DE DATOS REAL DE TU FLOTA (Placas y Choferes exacto)
 ASIGNACION_FLOTA = {
     "2447 CIN": "PEDRO FERNANDEZ",
     "432 AIL": "JUAN CALIXTO",
-    "1156 FER": " RAMIRO FERNÁNDEZ",
+    "1156 FER": "RAMIRO FERNÁNDEZ",
     "472 PXA (Sin Chofer)": "CHOFER TEMPORAL / N/A",
     "MERCEDES ROJO (Sin Placa)": "CHOFER TEMPORAL / N/A"
 }
