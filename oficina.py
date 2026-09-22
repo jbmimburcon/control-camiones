@@ -64,7 +64,7 @@ if contrasena == "AdminFlota2026":
         observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
         st.divider()
-     if st.button("💾 Guardar Registro de Viaje"):
+    if st.button("💾 Guardar Registro de Viaje"):
         # Conversión segura de texto a números manejando valores vacíos
      try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
