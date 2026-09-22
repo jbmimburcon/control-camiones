@@ -30,10 +30,17 @@ opcion_menu = st.sidebar.radio("📋 Menú de Navegación", ["Formulario de la S
 # ==============================================================================
 # PANTALLA 1: FORMULARIO DE INGRESO (Para la Secretaria)
 # ==============================================================================
-if opcion_menu == "Formulario de la Secretaria":
-    st.markdown("# 📝 Registro de Viaje Diario")
-    st.markdown("### Ingrese los datos solicitados en las casillas.")
+
+if opcion_menu == "Formulario de la Secretaria":  
+st.markdown("# 📝 Acceso Restringido")
     
+# Añadimos un campo para escribir la contraseña secreta
+    contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
+    
+    # Si la contraseña es correcta, se muestra el formulario original
+    if contrasena == "AdminFlota2026":
+        st.markdown("# 📝 Registro de Viaje Diario")
+        st.markdown("### Ingrese los datos solicitados en las casillas.") 
     fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
     lista_placas = list(DICCIONARIO_CHOFERES.keys())
     placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
@@ -116,6 +123,9 @@ if opcion_menu == "Formulario de la Secretaria":
             except Exception as e:
                 st.error("❌ Error al guardar. Verifica la configuración de Secrets en Streamlit.")
 
+            else:
+            if contrasena != "":
+            st.error("❌ Contraseña incorrecta. Solo personal autorizado.")
 # ==============================================================================
 # PANTALLA 2: PANEL DEL DUEÑO (Optimizado para tu Teléfono Celular)
 # ==============================================================================
