@@ -30,54 +30,49 @@ opcion_menu = st.sidebar.radio("📋 Menú de Navegación", ["Formulario de la S
 # ==============================================================================
 # PANTALLA 1: FORMULARIO DE INGRESO (Para la Secretaria)
 # ==============================================================================
-if opcion_menu == "Formulario de la Secretaria":  
-        st.markdown("# 📝 Acceso Restringido")
-        # contraseña secreta
-        contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
+if opcion_menu == "Formulario de la Secretaria":
+    st.markdown("# 📝 Registro de Viaje Diario")
+    st.markdown("### Ingrese los datos solicitados en las casillas.")
     
-    # Si la contraseña es correcta, se muestra el formulario original
-if contrasena == "AdminFlota2026":
-        st.markdown("# 📝 Registro de Viaje Diario")
-        st.markdown("### Ingrese los datos solicitados en las casillas.") 
-        fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
-        lista_placas = list(DICCIONARIO_CHOFERES.keys())
-        placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
-        chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
+    fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
+    lista_placas = list(DICCIONARIO_CHOFERES.keys())
+    placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
+    chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
     
-        st.success(f"👤 Chofer asignado: {chofer_assigned}")
-        st.divider()
+    st.success(f"👤 Chofer asignado: {chofer_assigned}")
+    st.divider()
     
-        st.markdown("### Configuración del Flete")
-        acoplado = st.radio("¿El camión lleva acoplado (Burro) en este viaje?", ["Sí (450 Bs)", "No (350 Bs)"], index=0)
-        valor_acoplado = 450.0 if "Sí" in acoplado else 350.0
-        st.divider()
+    st.markdown("### Configuración del Flete")
+    acoplado = st.radio("¿El camión lleva acoplado (Burro) en este viaje?", ["Sí (450 Bs)", "No (350 Bs)"], index=0)
+    valor_acoplado = 450.0 if "Sí" in acoplado else 350.0
+    st.divider()
     
-        st.markdown("### Datos del Viaje")
-        codigo_cfo = st.text_input("Código CFO de la Madera:")
+    st.markdown("### Datos del Viaje")
+    codigo_cfo = st.text_input("Código CFO de la Madera:")
     
-        # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
-        volumen_txt = st.text_input("Volumen Métrico Transportado (m³):", value="")
-        distancia_txt = st.text_input("Distancia del Viaje (Km):", value="")
-        diesel_txt = st.text_input("Litros de Diésel Cargados:", value="")
-        extras_txt = st.text_input("Gastos Extras / Imprevistos del Viaje (Bs):", value="")
+    # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
+    volumen_txt = st.text_input("Volumen Métrico Transportado (m³):", value="")
+    distancia_txt = st.text_input("Distancia del Viaje (Km):", value="")
+    diesel_txt = st.text_input("Litros de Diésel Cargados:", value="")
+    extras_txt = st.text_input("Gastos Extras / Imprevistos del Viaje (Bs):", value="")
     
-        observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
+    observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
-        st.divider()
-if st.button("💾 Guardar Registro de Viaje"):
+    st.divider()
+    if st.button("💾 Guardar Registro de Viaje"):
         # Conversión segura de texto a números manejando valores vacíos
-     try:
+        try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
             litros_diesel = float(diesel_txt.replace(",", ".")) if diesel_txt.strip() else 0.0
             gastos_extras = float(extras_txt.replace(",", ".")) if extras_txt.strip() else 0.0
-            except ValueError:
+        except ValueError:
             st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
             st.stop()
 
-      if not codigo_cfo:
+        if not codigo_cfo:
             st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
-      else:
+        else:
             try:
                 # Cálculos matemáticos en el backend
                 pago_por_madera = volumen_m3 * 18.0
@@ -121,9 +116,6 @@ if st.button("💾 Guardar Registro de Viaje"):
             except Exception as e:
                 st.error("❌ Error al guardar. Verifica la configuración de Secrets en Streamlit.")
 
-            else:
-            if contrasena != "":
-            st.error("❌ Contraseña incorrecta. Solo personal autorizado.")
 # ==============================================================================
 # PANTALLA 2: PANEL DEL DUEÑO (Optimizado para tu Teléfono Celular)
 # ==============================================================================
