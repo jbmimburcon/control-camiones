@@ -1,81 +1,70 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import os
+from streamlit_gsheets import GSheetsConnection
 
-# 1. CONFIGURACIÓN DEL REPORTE DEL DUEÑO
-st.set_page_config(page_title="Reporte Diario - Concepción", layout="centered")
-st.title("📊 Reporte Diario de Flota")
-st.subheader("Control de Viajes, Diésel y Madera en Vivo")
+st.set_page_config(page_title="Reporte Inteligente - Concepción", layout="centered")
+st.title("📊 Inteligencia de Flota - Modo Dueño")
+st.write("Análisis financiero de rendimiento y ganancias en tiempo real.")
 st.write("---")
 
-EXCEL_PATH = "control.xlsx"
-PRECIO_DIESEL_BS = 18.00  # <--- PRECIO ACTUAL DEL DIÉSEL EN BOLIVIA
+PRECIO_DIESEL_BS = 18.00  # PRECIO ACTUAL EN BOLIVIA
 
-def cargar_datos():
-    if os.path.exists(EXCEL_PATH):
-        return pd.read_excel(EXCEL_PATH)
-    else:
-        return pd.DataFrame()
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-df = cargar_datos()
+try:
+    df = conn.read(ttl=5)
+except:
+    df = pd.DataFrame()
 
-if df.empty:
-    st.warning("⚠️ El secretario aún no ha registrado ningún viaje el día de hoy.")
+if df.empty or "Camion" not in df.columns:
+    st.warning("⚠️ Su base de datos de Google Sheets está vacía o esperando el primer viaje de la oficina.")
 else:
-    df['Fecha'] = df['Fecha'].astype(str)
+    # Asegurar tipos de datos numéricos
+    df['Volumen_M3'] = pd.to_numeric(df['Volumen_M3'], errors='coerce').fillna(0)
+    df['Diesel_Litros'] = pd.to_numeric(df['Diesel_Litros'], errors='coerce').fillna(0)
+    df['Pago_Chofer'] = pd.to_numeric(df['Pago_Chofer'], errors='coerce').fillna(0)
+    df['Distancia_Viaje_Km'] = pd.to_numeric(df['Distancia_Viaje_Km'], errors='coerce').fillna(0)
     
-    # 2. FILTRO DE FECHA AUTOMÁTICO
-    fecha_hoy_sistema = datetime.now().strftime("%d/%m/%Y")
-    st.sidebar.header("Filtro de Visualización")
-    fecha_seleccionada = st.sidebar.text_input("Ver reportes del día:", value=fecha_hoy_sistema)
+    # Calcular el gasto de diésel en dinero por cada fila
+    df['Gasto_Diesel_Bs'] = df['Diesel_Litros'] * PRECIO_DIESEL_BS
     
-    df_hoy = df[df['Fecha'] == fecha_seleccionada]
+    # RESUMEN GENERAL EN LA PARTE DE ARRIBA
+    st.header("📈 Resumen Operativo General")
+    tot_madera = df['Volumen_M3'].sum()
+    tot_diesel_bs = df['Gasto_Diesel_Bs'].sum()
+    tot_fletes = df['Pago_Chofer'].sum()
     
-    # 3. RESUMEN EN PANTALLA EN CUADROS GRANDES (Multiplicando el diésel por 18 Bs)
-    st.header(f"📈 Resumen del Día: {fecha_seleccionada}")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("🪵 Total Madera", f"{tot_madera:.1f} m³")
+    c2.metric("⛽ Combustible", f"{int(tot_diesel_bs)} Bs")
+    c3.metric("💵 Total Fletes", f"{int(tot_fletes)} Bs")
     
-    camiones_hoy = df_hoy['Camion'].nunique()
-    madera_hoy = df_hoy['Volumen_M3'].sum()
-    litros_hoy = df_hoy['Diesel_Litros'].sum()
-    
-    # AQUÍ SE HACE LA MULTIPLICACIÓN PARA TU PANTALLA
-    dinero_diesel_hoy = litros_hoy * PRECIO_DIESEL_BS
-    flete_total_hoy = df_hoy['Pago_Chofer'].sum()
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label="🚚 Camiones en Ruta", value=f"{camiones_hoy} unidades")
-        st.metric(label="🪵 Total Madera Entrada", value=f"{madera_hoy:.1f} m³")
-    with col2:
-        st.metric(label="⛽ Gasto Diésel del Día", value=f"{int(dinero_diesel_hoy)} Bs", delta=f"{int(litros_hoy)} Litros cargados")
-        st.metric(label="💵 Total Fletes a Pagar", value=f"{int(flete_total_hoy)} Bs")
-        
     st.write("---")
     
-    # 4. TABLA DETALLADA PARA EL CELULAR
-    st.header("📋 Detalle de Viajes Recibidos Hoy")
-    if df_hoy.empty:
-        st.info(f"ℹ️ No hay fletes registrados para la fecha {fecha_seleccionada}.")
-    else:
-        df_hoy_visual = df_hoy[['Camion', 'Chofer', 'Codigo_CEFO', 'Volumen_M3', 'Diesel_Litros', 'Pago_Chofer', 'Observaciones']]
-        st.dataframe(df_hoy_visual, use_container_width=True)
-        
+    # EL ANALIZADOR METRICO: ¿QUIÉN TE HACE GANAR O PERDER PLATA?
+    st.header("🏆 Tabla de Rentabilidad por Camión")
+    st.write("Este análisis evalúa el volumen transportado frente al gasto de combustible de cada unidad.")
+    
+    # Agrupar datos financieros por placa de camión
+    analisis_camion = df.groupby('Camion').agg(
+        Viajes_Realizados=('Fecha', 'count'),
+        Madera_Total_m3=('Volumen_M3', 'sum'),
+        Diesel_Total_Litros=('Diesel_Litros', 'sum'),
+        Gasto_Diesel_Bs=('Gasto_Diesel_Bs', 'sum'),
+        Fletes_A_Pagar_Bs=('Pago_Chofer', 'sum')
+    ).reset_index()
+    
+    # Indicador de rendimiento técnico (Litros consumidos por cada Kilómetro recorrido)
+    km_totales = df.groupby('Camion')['Distancia_Viaje_Km'].sum().to_dict()
+    analisis_camion['Km_Recorridos'] = analisis_camion['Camion'].map(km_totales)
+    analisis_camion['Rendimiento (L/Km)'] = (analisis_camion['Diesel_Total_Litros'] / analisis_camion['Km_Recorridos']).round(2).fillna(0)
+    
+    # Mostrar tabla limpia en tu pantalla
+    st.dataframe(analisis_camion[[
+        'Camion', 'Viajes_Realizados', 'Madera_Total_m3', 'Gasto_Diesel_Bs', 'Fletes_A_Pagar_Bs', 'Rendimiento (L/Km)'
+    ]], use_container_width=True)
+    
     st.write("---")
-    
-    # 5. HISTORIAL DE ALARMAS DE ACEITE
-    st.header("🚨 Alertas de Mantenimiento Acumulado")
-    LIMITE_ACEITE = 10000
-    km_por_camion = df.groupby('Camion')['Distancia_Viaje_Km'].sum().to_dict()
-    
-    alertas_activas = False
-    for camion_placa in ["2447 CIN", "432 AIL", "1156 FER", "472 PXA (Sin Chofer)", "MERCEDES ROJO (Sin Placa)"]:
-        km_acumulados = km_por_camion.get(camion_placa, 0)
-        aceite_restante = LIMITE_ACEITE - (km_acumulados % LIMITE_ACEITE)
-        
-        if aceite_restante < 1000:
-            st.error(f"⚠️ *{camion_placa}:* Requiere cambio de aceite pronto. (Historial: {int(km_acumulados)} Km acumulados).")
-            alertas_activas = True
-            
-    if not alertas_activas:
-        st.success("✅ Kilometrajes y motores operando en rangos seguros.")
+    st.header("📋 Historial Completo de Cargas de Hoy")
+    st.dataframe(df[['Fecha', 'Camion', 'Chofer', 'Codigo_CFO', 'Volumen_M3', 'Diesel_Litros', 'Pago_Chofer']], use_container_width=True)
