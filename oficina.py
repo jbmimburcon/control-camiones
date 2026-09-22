@@ -30,7 +30,6 @@ opcion_menu = st.sidebar.radio("📋 Menú de Navegación", ["Formulario de la S
 # ==============================================================================
 # PANTALLA 1: FORMULARIO DE INGRESO (Para la Secretaria)
 # ==============================================================================
-
 if opcion_menu == "Formulario de la Secretaria":  
 st.markdown("# 📝 Acceso Restringido")
     
