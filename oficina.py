@@ -64,9 +64,9 @@ if contrasena == "AdminFlota2026":
         observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
         st.divider()
-        if st.button("💾 Guardar Registro de Viaje"):
+ if st.button("💾 Guardar Registro de Viaje"):
         # Conversión segura de texto a números manejando valores vacíos
-        try:
+ try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
             litros_diesel = float(diesel_txt.replace(",", ".")) if diesel_txt.strip() else 0.0
@@ -75,9 +75,9 @@ if contrasena == "AdminFlota2026":
             st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
             st.stop()
 
-        if not codigo_cfo:
+      if not codigo_cfo:
             st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
-        else:
+      else:
             try:
                 # Cálculos matemáticos en el backend
                 pago_por_madera = volumen_m3 * 18.0
