@@ -1,11 +1,10 @@
-
 import streamlit as st
 import datetime
 import pandas as pd
 from streamlit_gsheets import GSheetsConnection
 
 # 1. Configuración de la plataforma
-st.set_page_config(page_title="Transporte Concepción", page_icon="🚛", layout="wide")
+st.set_page_config(page_title="Transporte Concepción", page_icon="🚛", layout="centered")
 
 # --- PARÁMETROS CONFIGURABLES DE COSTOS ---
 PRECIO_DIESEL_POR_LITRO = 18.00       
@@ -33,7 +32,7 @@ opcion_menu = st.sidebar.radio("📋 Menú de Navegación", ["Formulario de la S
 # ==============================================================================
 if opcion_menu == "Formulario de la Secretaria":
     st.markdown("# 📝 Registro de Viaje Diario")
-    st.markdown("### Escriba los números directamente en las casillas.")
+    st.markdown("### Ingrese los datos solicitados en las casillas.")
     
     fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
     lista_placas = list(DICCIONARIO_CHOFERES.keys())
@@ -50,28 +49,41 @@ if opcion_menu == "Formulario de la Secretaria":
     
     st.markdown("### Datos del Viaje")
     codigo_cfo = st.text_input("Código CFO de la Madera:")
-    volumen_m3 = st.number_input("Volumen Métrico Transportado (m³):", min_value=0.0, step=0.01, format="%.2f")
-    distancia_km = st.number_input("Distancia del Viaje (Km):", min_value=0.0, step=1.0, format="%.2f")
-    litros_diesel = st.number_input("Litros de Diésel Cargados:", min_value=0.0, step=1.0, format="%.2f")
-    gastos_extras = st.number_input("Gastos Extras / Imprevistos del Viaje (Bs):", min_value=0.0, step=10.0, format="%.2f")
-    observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
-    # Cálculos en tiempo real
-    pago_por_madera = volumen_m3 * 18.0
-    total_flete_bs = pago_por_madera + valor_acoplado
-    desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
-    desgaste_aceite_bs = distancia_km * COSTO_ACEITE_POR_KM
-    total_mantenimiento_preventivo = desgaste_llantas_bs + desgaste_aceite_bs
-    gasto_diesel_bs = litros_diesel * PRECIO_DIESEL_POR_LITRO
-    extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
-    utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
+    # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
+    volumen_txt = st.text_input("Volumen Métrico Transportado (m³):", value="")
+    distancia_txt = st.text_input("Distancia del Viaje (Km):", value="")
+    diesel_txt = st.text_input("Litros de Diésel Cargados:", value="")
+    extras_txt = st.text_input("Gastos Extras / Imprevistos del Viaje (Bs):", value="")
+    
+    observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
     st.divider()
     if st.button("💾 Guardar Registro de Viaje"):
+        # Conversión segura de texto a números manejando valores vacíos
+        try:
+            volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
+            distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
+            litros_diesel = float(diesel_txt.replace(",", ".")) if diesel_txt.strip() else 0.0
+            gastos_extras = float(extras_txt.replace(",", ".")) if extras_txt.strip() else 0.0
+        except ValueError:
+            st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
+            st.stop()
+
         if not codigo_cfo:
             st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
         else:
             try:
+                # Cálculos matemáticos en el backend
+                pago_por_madera = volumen_m3 * 18.0
+                total_flete_bs = pago_por_madera + valor_acoplado
+                desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
+                desgaste_aceite_bs = distancia_km * COSTO_ACEITE_POR_KM
+                total_mantenimiento_preventivo = desgaste_llantas_bs + desgaste_aceite_bs
+                gasto_diesel_bs = litros_diesel * PRECIO_DIESEL_POR_LITRO
+                extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
+                utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
+
                 conn = st.connection("gsheets", type=GSheetsConnection)
                 df_existente = conn.read(ttl=0)
                 
@@ -94,14 +106,13 @@ if opcion_menu == "Formulario de la Secretaria":
                     "Observaciones": observaciones
                 }])
                 
-                # Filtrar posibles filas completamente vacías
                 if not df_existente.empty:
                     df_existente = df_existente.dropna(how='all')
                 
                 df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
                 conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=df_actualizado)
                 st.balloons()
-                st.success("✅ ¡Viaje guardado exitosamente!")
+                st.success(f"✅ ¡Viaje guardado! Flete: {total_flete_bs:,.2f} Bs | Utilidad: {utilidad_neta_bs:,.2f} Bs")
             except Exception as e:
                 st.error("❌ Error al guardar. Verifica la configuración de Secrets en Streamlit.")
 
@@ -110,13 +121,11 @@ if opcion_menu == "Formulario de la Secretaria":
 # ==============================================================================
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Control de Rendimiento Operativo")
-    st.write("Vista exclusiva de control gerencial para el análisis de flotas y costos.")
     
     try:
         conn = st.connection("gsheets", type=GSheetsConnection)
         df = conn.read(ttl=0)
         
-        # Limpieza básica para evitar leer filas en blanco de Google Sheets
         if not df.empty:
             df = df.dropna(subset=['Fecha', 'Placa', 'Total Flete Bs'])
             
