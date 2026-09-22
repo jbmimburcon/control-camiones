@@ -36,7 +36,7 @@ if opcion_menu == "Formulario de la Secretaria":
         contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     # Si la contraseña es correcta, se muestra el formulario original
-        if contrasena == "AdminFlota2026":
+if contrasena == "AdminFlota2026":
         st.markdown("# 📝 Registro de Viaje Diario")
         st.markdown("### Ingrese los datos solicitados en las casillas.") 
     fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
