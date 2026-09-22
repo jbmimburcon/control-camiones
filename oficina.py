@@ -44,15 +44,15 @@ if contrasena == "AdminFlota2026":
         placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
         chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
     
-    st.success(f"👤 Chofer asignado: {chofer_assigned}")
-    st.divider()
+        st.success(f"👤 Chofer asignado: {chofer_assigned}")
+        st.divider()
     
-    st.markdown("### Configuración del Flete")
+        st.markdown("### Configuración del Flete")
     acoplado = st.radio("¿El camión lleva acoplado (Burro) en este viaje?", ["Sí (450 Bs)", "No (350 Bs)"], index=0)
     valor_acoplado = 450.0 if "Sí" in acoplado else 350.0
-    st.divider()
+        st.divider()
     
-    st.markdown("### Datos del Viaje")
+        st.markdown("### Datos del Viaje")
     codigo_cfo = st.text_input("Código CFO de la Madera:")
     
     # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
