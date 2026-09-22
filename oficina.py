@@ -48,22 +48,22 @@ if contrasena == "AdminFlota2026":
         st.divider()
     
         st.markdown("### Configuración del Flete")
-    acoplado = st.radio("¿El camión lleva acoplado (Burro) en este viaje?", ["Sí (450 Bs)", "No (350 Bs)"], index=0)
-    valor_acoplado = 450.0 if "Sí" in acoplado else 350.0
+        acoplado = st.radio("¿El camión lleva acoplado (Burro) en este viaje?", ["Sí (450 Bs)", "No (350 Bs)"], index=0)
+        valor_acoplado = 450.0 if "Sí" in acoplado else 350.0
         st.divider()
     
         st.markdown("### Datos del Viaje")
-    codigo_cfo = st.text_input("Código CFO de la Madera:")
+        codigo_cfo = st.text_input("Código CFO de la Madera:")
     
-    # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
-    volumen_txt = st.text_input("Volumen Métrico Transportado (m³):", value="")
-    distancia_txt = st.text_input("Distancia del Viaje (Km):", value="")
-    diesel_txt = st.text_input("Litros de Diésel Cargados:", value="")
-    extras_txt = st.text_input("Gastos Extras / Imprevistos del Viaje (Bs):", value="")
+        # NUEVA CONFIGURACIÓN: Campos de texto limpios sin botones incómodos de +/-
+        volumen_txt = st.text_input("Volumen Métrico Transportado (m³):", value="")
+        distancia_txt = st.text_input("Distancia del Viaje (Km):", value="")
+        diesel_txt = st.text_input("Litros de Diésel Cargados:", value="")
+        extras_txt = st.text_input("Gastos Extras / Imprevistos del Viaje (Bs):", value="")
     
-    observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
+        observaciones = st.text_area("Observaciones o Ruta:", value="Sin novedad")
     
-    st.divider()
+        st.divider()
     if st.button("💾 Guardar Registro de Viaje"):
         # Conversión segura de texto a números manejando valores vacíos
         try:
