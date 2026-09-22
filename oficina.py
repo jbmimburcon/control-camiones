@@ -39,10 +39,10 @@ if opcion_menu == "Formulario de la Secretaria":
 if contrasena == "AdminFlota2026":
         st.markdown("# 📝 Registro de Viaje Diario")
         st.markdown("### Ingrese los datos solicitados en las casillas.") 
-    fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
-    lista_placas = list(DICCIONARIO_CHOFERES.keys())
-    placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
-    chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
+        fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
+        lista_placas = list(DICCIONARIO_CHOFERES.keys())
+        placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
+        chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
     
     st.success(f"👤 Chofer asignado: {chofer_assigned}")
     st.divider()
