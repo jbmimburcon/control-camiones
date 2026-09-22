@@ -31,13 +31,12 @@ opcion_menu = st.sidebar.radio("📋 Menú de Navegación", ["Formulario de la S
 # PANTALLA 1: FORMULARIO DE INGRESO (Para la Secretaria)
 # ==============================================================================
 if opcion_menu == "Formulario de la Secretaria":  
-st.markdown("# 📝 Acceso Restringido")
-    
-# Añadimos un campo para escribir la contraseña secreta
-    contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
+        st.markdown("# 📝 Acceso Restringido")
+        # contraseña secreta
+        contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     # Si la contraseña es correcta, se muestra el formulario original
-    if contrasena == "AdminFlota2026":
+        if contrasena == "AdminFlota2026":
         st.markdown("# 📝 Registro de Viaje Diario")
         st.markdown("### Ingrese los datos solicitados en las casillas.") 
     fecha_registro = st.date_input("📅 Fecha del registro:", datetime.date.today())
