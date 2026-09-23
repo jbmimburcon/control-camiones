@@ -109,10 +109,10 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not df_existente.empty:
                     df_existente = df_existente.dropna(how='all')
                 
-                df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
-                conn.update(spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"], data=df_actualizado)
-                st.balloons()
-                st.success(f"✅ ¡Viaje guardado! Flete: {total_flete_bs:,.2f} Bs | Utilidad: {utilidad_neta_bs:,.2f} Bs")
+            df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
+             conn.update(data=df_actualizado)
+            st.balloons()
+            st.success("✅ ¡Viaje guardado! Flete registrado correctamente.")
             except Exception as e:
                 st.error("❌ Error al guardar. Verifica la configuración de Secrets en Streamlit.")
 
