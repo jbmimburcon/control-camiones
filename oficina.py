@@ -39,7 +39,7 @@ def conectar_base_datos():
     }
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
-    return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
+    return client.open_by_url(f"https://google.com{ID_HOJA_CALCULO}").worksheet("Hoja 1")
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
