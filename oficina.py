@@ -24,7 +24,10 @@ ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 
 # Función de conexión directa unificada para evitar bloqueos
 def conectar_base_datos():
-    scope = ["https://googleapis.com", "https://googleapis.com"]
+    scope = [
+        "https://googleapis.com",
+        "https://googleapis.com"
+    ]
     creds_dict = {
         "type": st.secrets["connections"]["gsheets"]["type"],
         "project_id": st.secrets["connections"]["gsheets"]["project_id"],
@@ -39,7 +42,7 @@ def conectar_base_datos():
     }
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
-    return client.open_by_url(f"https://google.com{ID_HOJA_CALCULO}").worksheet("Hoja 1")
+    return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
