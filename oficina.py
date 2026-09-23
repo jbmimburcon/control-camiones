@@ -16,12 +16,13 @@ DICCIONARIO_CHOFERES = {
     "472-PXA": "Chofer"
 }
 
+# Precios fijos reales actualizados
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
 ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 
-# Conexión directa buscando la pestaña real "Hoja 1"
+# Función de conexión directa unificada para evitar bloqueos
 def conectar_base_datos():
     scope = ["https://googleapis.com", "https://googleapis.com"]
     creds_dict = {
@@ -53,6 +54,8 @@ opcion_menu = st.sidebar.radio(
 # ==============================================================================
 if opcion_menu == "Formulario de la Secretaria":
     st.markdown("# 📝 Acceso Restringido")
+    
+    # Campo para escribir la contraseña secreta
     contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     if contrasena == "AdminFlota2026":
@@ -69,12 +72,14 @@ if opcion_menu == "Formulario de la Secretaria":
         st.success(f"👤 Chofer asignado: {chofer_assigned}")
         st.divider()
 
+        # Inputs de texto manejando valores vacíos
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
         distancia_txt = st.text_input("Distancia del viaje (Km):", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
         extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
 
+        # Conversión de datos y proceso de guardado seguro
         try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
@@ -85,7 +90,7 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    # Cálculos comerciales
+                    # Cálculos matemáticos en el backend
                     pago_por_madera = volumen_m3 * 18.0
                     total_flete_bs = pago_por_madera
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
@@ -95,10 +100,11 @@ if opcion_menu == "Formulario de la Secretaria":
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
-                    # Inserción limpia apuntando a la "Hoja 1"
-                    client = gspread.authorize(Credentials.from_service_account_info(st.secrets["connections"]["gsheets"], scopes=["https://googleapis.com", "https://googleapis.com"]))
-                    hoja = client.open_by_key("1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM").worksheet("Hoja 1")
-                    nueva_fila = [
+                    # Inserción limpia usando la función unificada
+                    hoja = conectar_base_datos()
+                    
+                    # Estructura de la nueva fila a guardar
+                    nuevo_registro = [
                         fecha_registro.strftime("%Y-%m-%d"),
                         placa_seleccionada,
                         chofer_assigned,
@@ -117,20 +123,22 @@ if opcion_menu == "Formulario de la Secretaria":
                         observaciones
                     ]
                     
-                    hoja.append_row(nueva_fila)
+                    # Guardado directo en la hoja de cálculo
+                    hoja.append_row(nuevo_registro)
+                    
                     st.balloons()
-                    st.success("✅ ¡Viaje guardado! Registro insertado con éxito en tu archivo control_flota.")
+                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
                     
         except ValueError:
-            st.error("⚠️ Error: Por favor introduzca solo números en las casillas correspondientes.")
+            st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
         except Exception as e:
-            st.error(f"❌ Error al guardar datos. Detalles del sistema: {e}")
+            st.error(f"❌ Error al guardar. Detalles del sistema: {e}")
     else:
         if contrasena != "":
             st.error("❌ Contraseña incorrecta. Solo personal autorizado.")
 
 # ==============================================================================
-# PANTALLA 2: PANEL DEL DUEÑO (Reportes en el Celular)
+# PANTALLA 2: PANEL DEL DUEÑO (Optimizado para tu Teléfono Celular)
 # ==============================================================================
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
@@ -143,13 +151,13 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
         if datos:
             df = pd.DataFrame(datos)
             
-            # Cambiamos los nombres para asegurar la compatibilidad con tus columnas reales de Excel
+            # Limpieza básica para evitar errores en las sumas
             df.columns = [c.strip() for c in df.columns]
-            
             df['Distancia Km'] = pd.to_numeric(df['Distancia Km'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
             df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
             
+            # Métricas rápidas de visualización
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Distancia Recorrida", f"{df['Distancia Km'].sum():,.1f} Km")
@@ -162,7 +170,7 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             st.subheader("📋 Historial Completo de Viajes")
             st.dataframe(df)
         else:
-            st.info("💡 Aún no hay registros de viajes guardados en la Hoja 1 para mostrar.")
+            st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
             
     except Exception as e:
-        st.error(f"No se pudieron cargar los reportes. Detalles técnicos: {e}")
+        st.error(f"No se pudieron cargar los reportes en el celular. Detalles: {e}")
