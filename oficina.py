@@ -83,9 +83,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     conn = st.connection("gsheets", type=GSheetsConnection)
                     df_existente = conn.read()
                     
-                    if df_existente is not None and not df_existente.empty:
-                        df_existente = df_existente.dropna(how='all')
-                    else:
+                    if df_existente is None:
                         df_existente = pd.DataFrame()
 
                     # Estructura de la nueva fila a guardar
@@ -110,7 +108,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     
                     # Guardado de datos corregido para la versión actual de Streamlit
                     nueva_fila = pd.DataFrame([nuevo_registro])
-                    df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
+                    df_actualizado = df_existente._append(nuevo_registro, ignore_index=True)
                     conn.update(data=df_actualizado)
                     
                     st.balloons()
