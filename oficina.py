@@ -96,7 +96,8 @@ if opcion_menu == "Formulario de la Secretaria":
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
                     # Inserción directa en Google Sheets por fila ordenada
-                    hoja = conectar_base_datos()
+                    client = gspread.authorize(Credentials.from_service_account_info(st.secrets["connections"]["gsheets"], scopes=["https://googleapis.com", "https://googleapis.com"]))
+                    hoja = client.open_by_key("1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ").sheet1
                     nueva_fila = [
                         fecha_registro.strftime("%Y-%m-%d"),
                         placa_seleccionada,
