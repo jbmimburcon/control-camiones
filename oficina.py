@@ -1,4 +1,4 @@
-[8:42 p.m., 22/9/2026] CARPE DIEM: import streamlit as st
+
 from streamlit_gsheets import GSheetsConnection
 import datetime
 import pandas as pd
