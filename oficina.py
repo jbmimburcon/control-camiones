@@ -19,7 +19,7 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-NOMBRE_HOJA_CALCULO = "control_flota"
+NOMBRE_HOJA_CALCULO = "1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ"
 
 # Conexión directa y nativa por el canal de Google Drive (Sin fallos de librería)
 def conectar_base_datos():
@@ -38,7 +38,7 @@ def conectar_base_datos():
     }
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
-    return client.open(NOMBRE_HOJA_CALCULO).sheet1
+    return client.open_by_key(NOMBRE_HOJA_CALCULO).sheet1
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
