@@ -22,10 +22,7 @@ COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
 ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 
-# Función de conexión directa unificada para evitar bloqueos
-
 # Función unificada que corrige las URLs defectuosas de tus secrets automáticamente
-# Conexión definitiva y blindada usando gspread sin intermediación web de Streamlit
 def conectar_base_datos():
     creds_dict = {
         "type": st.secrets["connections"]["gsheets"]["type"],
@@ -43,6 +40,7 @@ def conectar_base_datos():
     # Esto fuerza la conexión en segundo plano usando la cuenta de servicio directa
     client = gspread.service_account_from_dict(creds_dict)
     return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
+
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
 # ==============================================================================
@@ -105,29 +103,6 @@ if opcion_menu == "Formulario de la Secretaria":
                     # Inserción limpia usando la función unificada
                     hoja = conectar_base_datos()
                     
-                    # Estructura de la nueva fila a guardar
-                    nuevo_registro = [
-                        str(fecha_registro),
-                        placa_seleccionada,
-                        chofer_assigned,
-                        "Sí" if acoplado else "No",
-                        codigo_cfo,
-                        volumen_m3,
-                        distancia_km,
-                        litros_diesel,
-                        gasto_diesel_bs,
-                        desgaste_llantas_bs,
-                        desgaste_aceite_bs,
-                        gastos_extras,
-                        extra_por_m3,
-                        total_flete_bs,
-                        utilidad_neta_bs,
-                        observaciones
-                    ]
-                    
-                 # Guardado robusto con especificación de entrada de datos para evitar el error 404
-                    hoja.append_row(
-                     
                     # Estructura de la nueva fila a guardar
                     nuevo_registro = [
                         fecha_registro.strftime("%Y-%m-%d"),
