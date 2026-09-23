@@ -125,12 +125,37 @@ if opcion_menu == "Formulario de la Secretaria":
                         observaciones
                     ]
                     
-                    # Guardado directo en la hoja de cálculo
-                    hoja.append_row(nuevo_registro)
+                 # Guardado robusto con especificación de entrada de datos para evitar el error 404
+                    hoja.append_row(
+                     
+                    # Estructura de la nueva fila a guardar
+                    nuevo_registro = [
+                        fecha_registro.strftime("%Y-%m-%d"),
+                        placa_seleccionada,
+                        chofer_assigned,
+                        "Sí" if acoplado else "No",
+                        codigo_cfo,
+                        volumen_m3,
+                        distancia_km,
+                        litros_diesel,
+                        gasto_diesel_bs,
+                        desgaste_llantas_bs,
+                        desgaste_aceite_bs,
+                        gastos_extras,
+                        extra_por_m3,
+                        total_flete_bs,
+                        utilidad_neta_bs,
+                        observaciones
+                    ]
+                    
+                    # Guardado robusto con especificación de entrada de datos para evitar el error 404
+                    hoja.append_row(
+                        nuevo_registro,
+                        value_input_option="USER_ENTERED"
+                    )
                     
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
-                    
         except ValueError:
             st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
         except Exception as e:
