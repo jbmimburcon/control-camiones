@@ -1,8 +1,7 @@
 import streamlit as st
 import datetime
 import pandas as pd
-import gspread
-from google.oauth2.service_account import Credentials
+from streamlit_gsheets import GSheetsConnection
 
 # ==============================================================================
 # 1. CONFIGURACIONES GENERALES Y DICCIONARIOS (DATOS REALES JORGE)
@@ -20,26 +19,7 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
-
-# Función unificada que corrige las URLs defectuosas de tus secrets automáticamente
-def conectar_base_datos():
-    creds_dict = {
-        "type": st.secrets["connections"]["gsheets"]["type"],
-        "project_id": st.secrets["connections"]["gsheets"]["project_id"],
-        "private_key_id": st.secrets["connections"]["gsheets"]["private_key_id"],
-        "private_key": st.secrets["connections"]["gsheets"]["private_key"],
-        "client_email": st.secrets["connections"]["gsheets"]["client_email"],
-        "client_id": st.secrets["connections"]["gsheets"]["client_id"],
-        "auth_uri": st.secrets["connections"]["gsheets"]["auth_uri"],
-        "token_uri": st.secrets["connections"]["gsheets"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["connections"]["gsheets"]["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"],
-    }
-    
-    # Esto fuerza la conexión en segundo plano usando la cuenta de servicio directa
-    client = gspread.service_account_from_dict(creds_dict)
-    return client.open_by_key(ID_HOJA_CALCULO).get.worksheet(0)
+URL_DOCUMENTO = "https://google.com"
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
@@ -55,7 +35,6 @@ opcion_menu = st.sidebar.radio(
 if opcion_menu == "Formulario de la Secretaria":
     st.markdown("# 📝 Acceso Restringido")
     
-    # Campo para escribir la contraseña secreta
     contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     if contrasena == "AdminFlota2026":
@@ -72,14 +51,12 @@ if opcion_menu == "Formulario de la Secretaria":
         st.success(f"👤 Chofer asignado: {chofer_assigned}")
         st.divider()
 
-        # Inputs de texto manejando valores vacíos
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
         distancia_txt = st.text_input("Distancia del viaje (Km):", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
         extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
 
-        # Conversión de datos y proceso de guardado seguro
         try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
@@ -90,7 +67,6 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    # Cálculos matemáticos en el backend
                     pago_por_madera = volumen_m3 * 18.0
                     total_flete_bs = pago_por_madera
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
@@ -100,34 +76,36 @@ if opcion_menu == "Formulario de la Secretaria":
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
-                    # Inserción limpia usando la función unificada
-                    hoja = conectar_base_datos()
+                    # CONEXIÓN OFICIAL DE STREAMLIT (Evita el error 404 de gspread)
+                    conn = st.connection("gsheets", type=GSheetsConnection)
                     
-                    # Estructura de la nueva fila a guardar
-                    nuevo_registro = [
-                        fecha_registro.strftime("%Y-%m-%d"),
-                        placa_seleccionada,
-                        chofer_assigned,
-                        "Sí" if acoplado else "No",
-                        codigo_cfo,
-                        volumen_m3,
-                        distancia_km,
-                        litros_diesel,
-                        gasto_diesel_bs,
-                        desgaste_llantas_bs,
-                        desgaste_aceite_bs,
-                        gastos_extras,
-                        extra_por_m3,
-                        total_flete_bs,
-                        utilidad_neta_bs,
-                        observaciones
-                    ]
+                    # Leer datos existentes para no borrar nada
+                    df_existente = conn.read(spreadsheet=URL_DOCUMENTO, worksheet="Hoja 1")
                     
-                    # Guardado robusto con especificación de entrada de datos para evitar el error 404
-                    hoja.append_row(
-                        nuevo_registro,
-                        value_input_option="USER_ENTERED"
-                    )
+                    nuevo_registro = {
+                        "Fecha": fecha_registro.strftime("%Y-%m-%d"),
+                        "Placa": placa_seleccionada,
+                        "Chofer": chofer_assigned,
+                        "Lleva Acoplado": "Sí" if acoplado else "No",
+                        "Codigo CFO": codigo_cfo,
+                        "Volumen m3": volumen_m3,
+                        "Distancia Km": distancia_km,
+                        "Litros Diesel": litros_diesel,
+                        "Gastos Diesel": gasto_diesel_bs,
+                        "Desgaste Llantas": desgaste_llantas_bs,
+                        "Desgaste Aceite": desgaste_aceite_bs,
+                        "Gastos Extras": gastos_extras,
+                        "Extra por m3": extra_por_m3,
+                        "Total Flete": total_flete_bs,
+                        "Utilidad Neta Bs": utilidad_neta_bs,
+                        "Observaciones": observaciones
+                    }
+                    
+                    df_nuevo = pd.DataFrame([nuevo_registro])
+                    df_final = pd.concat([df_existente, df_nuevo], ignore_index=True)
+                    
+                    # Guardar directamente usando el conector nativo
+                    conn.update(spreadsheet=URL_DOCUMENTO, worksheet="Hoja 1", data=df_final)
                     
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
@@ -147,19 +125,15 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("### Información en tiempo real del consumo de combustible y ganancias.")
     
     try:
-        hoja = conectar_base_datos()
-        datos = hoja.get_all_records()
+        conn = st.connection("gsheets", type=GSheetsConnection)
+        df = conn.read(spreadsheet=URL_DOCUMENTO, worksheet="Hoja 1")
         
-        if datos:
-            df = pd.DataFrame(datos)
-            
-            # Limpieza básica para evitar errores en las sumas
+        if not df.empty:
             df.columns = [c.strip() for c in df.columns]
             df['Distancia Km'] = pd.to_numeric(df['Distancia Km'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
             df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
             
-            # Métricas rápidas de visualización
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Distancia Recorrida", f"{df['Distancia Km'].sum():,.1f} Km")
