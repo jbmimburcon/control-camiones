@@ -19,9 +19,9 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-NOMBRE_HOJA_CALCULO = "1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ"
+ID_HOJA_CALCULO = "1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ"
 
-# Conexión directa y nativa por el canal de Google Drive (Sin fallos de librería)
+# Conexión directa buscando la pestaña real "Hoja 1"
 def conectar_base_datos():
     scope = ["https://googleapis.com", "https://googleapis.com"]
     creds_dict = {
@@ -38,7 +38,7 @@ def conectar_base_datos():
     }
     creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
     client = gspread.authorize(creds)
-    return client.open_by_key(NOMBRE_HOJA_CALCULO).sheet1
+    return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
@@ -85,7 +85,7 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    # Cálculos matemáticos comerciales
+                    # Cálculos comerciales
                     pago_por_madera = volumen_m3 * 18.0
                     total_flete_bs = pago_por_madera
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
@@ -95,9 +95,8 @@ if opcion_menu == "Formulario de la Secretaria":
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
-                    # Inserción directa en Google Sheets por fila ordenada
-                    client = gspread.authorize(Credentials.from_service_account_info(st.secrets["connections"]["gsheets"], scopes=["https://googleapis.com", "https://googleapis.com"]))
-                    hoja = client.open_by_key("1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ").sheet1
+                    # Inserción limpia apuntando a la "Hoja 1"
+                    hoja = conectar_base_datos()
                     nueva_fila = [
                         fecha_registro.strftime("%Y-%m-%d"),
                         placa_seleccionada,
@@ -119,7 +118,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     
                     hoja.append_row(nueva_fila)
                     st.balloons()
-                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu archivo control_flota.")
+                    st.success("✅ ¡Viaje guardado! Registro insertado con éxito en tu archivo control_flota.")
                     
         except ValueError:
             st.error("⚠️ Error: Por favor introduzca solo números en las casillas correspondientes.")
@@ -142,6 +141,10 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
         
         if datos:
             df = pd.DataFrame(datos)
+            
+            # Cambiamos los nombres para asegurar la compatibilidad con tus columnas reales de Excel
+            df.columns = [c.strip() for c in df.columns]
+            
             df['Distancia Km'] = pd.to_numeric(df['Distancia Km'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
             df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
@@ -158,7 +161,7 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             st.subheader("📋 Historial Completo de Viajes")
             st.dataframe(df)
         else:
-            st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
+            st.info("💡 Aún no hay registros de viajes guardados en la Hoja 1 para mostrar.")
             
     except Exception as e:
         st.error(f"No se pudieron cargar los reportes. Detalles técnicos: {e}")
