@@ -34,7 +34,7 @@ def conectar_base_datos():
         "auth_uri": st.secrets["connections"]["gsheets"]["auth_uri"],
         "token_uri": st.secrets["connections"]["gsheets"]["token_uri"],
         "auth_provider_x509_cert_url": st.secrets["connections"]["gsheets"]["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"]
+        "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"],
     }
     
     # Esto fuerza la conexión en segundo plano usando la cuenta de servicio directa
