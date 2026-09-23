@@ -105,7 +105,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     
                     # Estructura de la nueva fila a guardar
                     nuevo_registro = [
-                        fecha_registro.strftime("%Y-%m-%d"),
+                        str(fecha_registro),
                         placa_seleccionada,
                         chofer_assigned,
                         "Sí" if acoplado else "No",
