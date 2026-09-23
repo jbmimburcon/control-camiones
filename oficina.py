@@ -97,7 +97,7 @@ if opcion_menu == "Formulario de la Secretaria":
 
                     # Inserción limpia apuntando a la "Hoja 1"
                     client = gspread.authorize(Credentials.from_service_account_info(st.secrets["connections"]["gsheets"], scopes=["https://googleapis.com", "https://googleapis.com"]))
-                    hoja = client.open_by_key("1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM").worksheet("Hoja 1")
+                    hoja = client.open_by_key("1fNfxOGdGwwcr8Fn12u2FUIAQ9RB9TZYL5kEURAwIYEM").worksheet("Hoja 1")
                     nueva_fila = [
                         fecha_registro.strftime("%Y-%m-%d"),
                         placa_seleccionada,
