@@ -19,7 +19,7 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-ID_HOJA_CALCULO = "1ItJpJgMGdD-QyblMErYeEvnzQ-WPpSb7Gb6J2cS8EJQ"
+ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 
 # Conexión directa buscando la pestaña real "Hoja 1"
 def conectar_base_datos():
@@ -96,7 +96,8 @@ if opcion_menu == "Formulario de la Secretaria":
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
                     # Inserción limpia apuntando a la "Hoja 1"
-                    hoja = conectar_base_datos()
+                    client = gspread.authorize(Credentials.from_service_account_info(st.secrets["connections"]["gsheets"], scopes=["https://googleapis.com", "https://googleapis.com"]))
+                    hoja = client.open_by_key("1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM").worksheet("Hoja 1")
                     nueva_fila = [
                         fecha_registro.strftime("%Y-%m-%d"),
                         placa_seleccionada,
