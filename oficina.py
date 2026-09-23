@@ -1,7 +1,8 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import datetime
 import pandas as pd
+import gspread
+from google.oauth2.service_account import Credentials
 
 # ==============================================================================
 # 1. CONFIGURACIONES GENERALES Y DICCIONARIOS (DATOS REALES JORGE)
@@ -15,10 +16,29 @@ DICCIONARIO_CHOFERES = {
     "472-PXA": "Chofer"
 }
 
-# Precios fijos reales actualizados
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
+NOMBRE_HOJA_CALCULO = "control_flota"
+
+# Conexión directa y nativa por el canal de Google Drive (Sin fallos de librería)
+def conectar_base_datos():
+    scope = ["https://googleapis.com", "https://googleapis.com"]
+    creds_dict = {
+        "type": st.secrets["connections"]["gsheets"]["type"],
+        "project_id": st.secrets["connections"]["gsheets"]["project_id"],
+        "private_key_id": st.secrets["connections"]["gsheets"]["private_key_id"],
+        "private_key": st.secrets["connections"]["gsheets"]["private_key"],
+        "client_email": st.secrets["connections"]["gsheets"]["client_email"],
+        "client_id": st.secrets["connections"]["gsheets"]["client_id"],
+        "auth_uri": st.secrets["connections"]["gsheets"]["auth_uri"],
+        "token_uri": st.secrets["connections"]["gsheets"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["connections"]["gsheets"]["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"]
+    }
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+    client = gspread.authorize(creds)
+    return client.open(NOMBRE_HOJA_CALCULO).sheet1
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
@@ -33,8 +53,6 @@ opcion_menu = st.sidebar.radio(
 # ==============================================================================
 if opcion_menu == "Formulario de la Secretaria":
     st.markdown("# 📝 Acceso Restringido")
-    
-    # Campo para escribir la contraseña secreta
     contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     if contrasena == "AdminFlota2026":
@@ -51,14 +69,12 @@ if opcion_menu == "Formulario de la Secretaria":
         st.success(f"👤 Chofer asignado: {chofer_assigned}")
         st.divider()
 
-        # Inputs de texto manejando valores vacíos
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
         distancia_txt = st.text_input("Distancia del viaje (Km):", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
         extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
 
-        # Conversión de datos y proceso de guardado seguro
         try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
@@ -69,7 +85,7 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    # Cálculos matemáticos en el backend
+                    # Cálculos matemáticos comerciales
                     pago_por_madera = volumen_m3 * 18.0
                     total_flete_bs = pago_por_madera
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
@@ -79,67 +95,56 @@ if opcion_menu == "Formulario de la Secretaria":
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
-                    # Conexión nativa corregida usando Secrets de Streamlit
-                    conn = st.connection("gsheets", type=GSheetsConnection)
-                    df_existente = conn.read()
+                    # Inserción directa en Google Sheets por fila ordenada
+                    hoja = conectar_base_datos()
+                    nueva_fila = [
+                        fecha_registro.strftime("%Y-%m-%d"),
+                        placa_seleccionada,
+                        chofer_assigned,
+                        "Sí" if acoplado else "No",
+                        codigo_cfo,
+                        volumen_m3,
+                        distancia_km,
+                        litros_diesel,
+                        gasto_diesel_bs,
+                        desgaste_llantas_bs,
+                        desgaste_aceite_bs,
+                        gastos_extras,
+                        extra_por_m3,
+                        total_flete_bs,
+                        utilidad_neta_bs,
+                        observaciones
+                    ]
                     
-                    if df_existente is None:
-                        df_existente = pd.DataFrame()
-
-                    # Estructura de la nueva fila a guardar
-                    nuevo_registro = {
-                        "Fecha": fecha_registro.strftime("%Y-%m-%d"),
-                        "Placa": placa_seleccionada,
-                        "Chofer": chofer_assigned,
-                        "Lleva Acoplado": "Sí" if acoplado else "No",
-                        "Codigo CFO": codigo_cfo,
-                        "Volumen m3": volumen_m3,
-                        "Distancia Km": distancia_km,
-                        "Litros Diesel": litros_diesel,
-                        "Gasto Diesel Bs": gasto_diesel_bs,
-                        "Prorrateo Llantas Bs": desgaste_llantas_bs,
-                        "Prorrateo Aceite Bs": desgaste_aceite_bs,
-                        "Gastos Extras Bs": gastos_extras,
-                        "Extra por m3_Bs": extra_por_m3,
-                        "Total Flete Bs": total_flete_bs,
-                        "Utilidad Neta Bs": utilidad_neta_bs,
-                        "Observaciones": observaciones
-                    }
-                    
-                    # Guardado de datos corregido para la versión actual de Streamlit
-                    nueva_fila = pd.DataFrame([nuevo_registro])
-                    df_actualizado = df_existente._append(nuevo_registro, ignore_index=True)
-                    conn.update(data=df_actualizado)
-                    
+                    hoja.append_row(nueva_fila)
                     st.balloons()
-                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en la base de datos de Google Sheets.")
+                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu archivo control_flota.")
                     
         except ValueError:
-            st.error("⚠️ Error: Por favor introduzca solo números en las casillas de volumen, distancia, diésel y extras.")
+            st.error("⚠️ Error: Por favor introduzca solo números en las casillas correspondientes.")
         except Exception as e:
-            st.error(f"❌ Error al guardar. Verifica la configuración de Secrets en Streamlit. Detalles: {e}")
+            st.error(f"❌ Error al guardar datos. Detalles del sistema: {e}")
     else:
         if contrasena != "":
-            st.error("❌ Contraseña incorrecta. Solo personal authorized.")
+            st.error("❌ Contraseña incorrecta. Solo personal autorizado.")
 
 # ==============================================================================
-# PANTALLA 2: PANEL DEL DUEÑO (Optimizado para tu Teléfono Celular)
+# PANTALLA 2: PANEL DEL DUEÑO (Reportes en el Celular)
 # ==============================================================================
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
     st.markdown("### Información en tiempo real del consumo de combustible y ganancias.")
     
     try:
-        conn = st.connection("gsheets", type=GSheetsConnection)
-        df = conn.read()
+        hoja = conectar_base_datos()
+        datos = hoja.get_all_records()
         
-        if df is not None and not df.empty:
-            # Limpieza básica para evitar errores en las sumas
+        if datos:
+            df = pd.DataFrame(datos)
             df['Distancia Km'] = pd.to_numeric(df['Distancia Km'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
             df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
             
-            # Métricas rápidas de visualización
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Total Distancia Recorrida", f"{df['Distancia Km'].sum():,.1f} Km")
@@ -155,4 +160,4 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
             
     except Exception as e:
-        st.error(f"No se pudieron cargar los reportes en el celular. Asegúrate de configurar los Secrets de Google Sheets. {e}")
+        st.error(f"No se pudieron cargar los reportes. Detalles técnicos: {e}")
