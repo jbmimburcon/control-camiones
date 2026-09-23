@@ -150,7 +150,6 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             
     except Exception as e:
         st.error(f"No se pudieron cargar los reportes en el celular. Asegúrate de configurar los Secrets de Google Sheets. {e}")
-[9:02 p.m., 22/9/2026] CARPE DIEM: import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import datetime
 import pandas as pd
