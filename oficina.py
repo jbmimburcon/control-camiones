@@ -25,6 +25,7 @@ ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 # Función de conexión directa unificada para evitar bloqueos
 
 # Función unificada que corrige las URLs defectuosas de tus secrets automáticamente
+# Conexión definitiva y blindada usando gspread sin intermediación web de Streamlit
 def conectar_base_datos():
     creds_dict = {
         "type": st.secrets["connections"]["gsheets"]["type"],
@@ -33,14 +34,13 @@ def conectar_base_datos():
         "private_key": st.secrets["connections"]["gsheets"]["private_key"],
         "client_email": st.secrets["connections"]["gsheets"]["client_email"],
         "client_id": st.secrets["connections"]["gsheets"]["client_id"],
-        # CORRECCIÓN MANUAL DE URLs PARA EVITAR EL ERROR 404 DE GOOGLE
-        "auth_uri": "https://google.com",
-        "token_uri": "https://googleapis.com",
-        "auth_provider_x509_cert_url": "https://googleapis.com",
+        "auth_uri": st.secrets["connections"]["gsheets"]["auth_uri"],
+        "token_uri": st.secrets["connections"]["gsheets"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["connections"]["gsheets"]["auth_provider_x509_cert_url"],
         "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"]
     }
     
-    # Conexión nativa y segura usando gspread
+    # Esto fuerza la conexión en segundo plano usando la cuenta de servicio directa
     client = gspread.service_account_from_dict(creds_dict)
     return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
 # ==============================================================================
