@@ -39,7 +39,7 @@ def conectar_base_datos():
     
     # Esto fuerza la conexión en segundo plano usando la cuenta de servicio directa
     client = gspread.service_account_from_dict(creds_dict)
-    return client.open_by_key(ID_HOJA_CALCULO).worksheet("Hoja 1")
+    return client.open_by_key(ID_HOJA_CALCULO).get.worksheet("0)
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
