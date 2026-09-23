@@ -105,7 +105,9 @@ if opcion_menu == "Formulario de la Secretaria":
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
     try:
-        url_publica = URL_DOCUMENTO.replace("/edit", "/export?format=csv")
+        # TRUCO DE PROGRAMADOR: Agregamos un número aleatorio al final para obligar a Google a leer el Excel en tiempo real
+        import time
+        url_publica = URL_DOCUMENTO.replace("/edit", f"/export?format=csv&cache_bust={int(time.time())}")
         df = pd.read_csv(url_publica)
         
         if not df.empty:
