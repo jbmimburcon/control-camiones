@@ -106,16 +106,20 @@ if opcion_menu == "Formulario de la Secretaria":
                     "Observaciones": observaciones
                 }])
                 
-                if not df_existente.empty:
-                    df_existente = df_existente.dropna(how='all')
-                
-            df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
-             conn.update(data=df_actualizado)
+        if not df_existente.empty:
+             df_existente = df_existente.dropna(how='all')
+        try:
+            # (Aquí está todo tu código de arriba con los datos del flete)
+            
+            # --- LÍNEAS DE GUARDADO (DEBEN IR DENTRO DEL TRY) ---
+             df_actualizado = pd.concat([df_existente, nueva_fila], ignore_index=True)
+            conn.update(data=df_actualizado)
             st.balloons()
             st.success("✅ ¡Viaje guardado! Flete registrado correctamente.")
-            except Exception as e:
-                st.error("❌ Error al guardar. Verifica la configuración de Secrets en Streamlit.")
 
+        except Exception as e:
+            st.error(f"❌ Error al guardar. Verifica la configuración de Secrets en Streamlit. Detalles: {e}")    
+          
 # ==============================================================================
 # PANTALLA 2: PANEL DEL DUEÑO (Optimizado para tu Teléfono Celular)
 # ==============================================================================
