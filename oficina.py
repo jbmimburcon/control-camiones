@@ -80,7 +80,7 @@ if opcion_menu == "Formulario de la Secretaria":
                         "Lleva Acoplado": "Sí" if acoplado else "No",
                         "Codigo CFO": codigo_cfo,
                         "Volumen m3": volumen_m3,
-                        "Distancia Km": distancia_km,
+                        "Distancia": distancia_km,
                         "Litros Diesel": litros_diesel,
                         "Gastos Diesel": gasto_diesel_bs,
                         "Desgaste Llantas": desgaste_llantas_bs,
