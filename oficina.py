@@ -18,7 +18,7 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEUrAWlYEM/edit?gid=0#gid=0"
+ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEURAwIYEM"
 
 def conectar_base_datos():
     creds_dict = {
@@ -45,7 +45,7 @@ opcion_menu = st.sidebar.radio(
 )
 
 if opcion_menu == "Formulario de la Secretaria":
-        st.markdown("# 📝 Acceso Restringido")
+    st.markdown("# 📝 Acceso Restringido")
     contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     if contrasena == "AdminFlota2026":
@@ -63,7 +63,7 @@ if opcion_menu == "Formulario de la Secretaria":
         st.divider()
 
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
-        distancia_txt = st.text_input("Distancia del viaje (Km):", "0")
+        distancia_txt = st.text_input("Distancia del viaje:", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
         extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
@@ -110,7 +110,10 @@ if opcion_menu == "Formulario de la Secretaria":
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
         except Exception as e:
-            st.error(f"❌ Error al guardar. Detalles del sistema:{e}")
+            st.error(f"❌ Error al guardar. Detalles del sistema: {e}")
+    else:
+        if contrasena != "":
+            st.error("❌ Contraseña incorrecta. Solo personal autorizado.")
 
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
@@ -124,11 +127,9 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             df = pd.DataFrame(datos)
             df.columns = [c.strip() for c in df.columns]
             
-            # Forzar la conversión limpia de las columnas quitando el Km anterior
             df['Distancia'] = pd.to_numeric(df['Distancia'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
             
-            # Sumar Utilidad de manera segura si existe la columna
             if 'Utilidad Neta Bs' in df.columns:
                 df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
                 utilidad_total = df['Utilidad Neta Bs'].sum()
@@ -150,4 +151,4 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
             
     except Exception as e:
-            st.error(f"Error al cargar reportes: {e} ")
+        st.error(f"Error al cargar reportes: {e}")
