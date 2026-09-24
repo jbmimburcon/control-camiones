@@ -18,7 +18,7 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
-URL_DOCUMENTO = "https://docs.google.com/spreadsheets/d/1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEUrAWlYEM/edit?gid=0#gid=0"
+ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEUrAWlYEM/edit?gid=0#gid=0"
 
 def conectar_base_datos():
     creds_dict = {
@@ -34,7 +34,7 @@ def conectar_base_datos():
         "client_x509_cert_url": st.secrets["connections"]["gsheets"]["client_x509_cert_url"]
     }
     client = gspread.service_account_from_dict(creds_dict)
-    return client.open_by_key(URL_DOCUMENTO).get_worksheet(0)
+    return client.open_by_key(ID_HOJA_CALCULO).get_worksheet(0)
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
