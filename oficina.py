@@ -110,7 +110,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
         except Exception as e:
-            st.error(f"❌ Error al guardar. Detalles del sistema: {e}")
+            st.error(f"❌ Error al guardar. Detalles del sistema:{e}")
 
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
