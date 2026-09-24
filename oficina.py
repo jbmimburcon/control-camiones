@@ -103,7 +103,7 @@ if opcion_menu == "Formulario de la Secretaria":
                         desgaste_llantas_bs,
                         desgaste_aceite_bs,
                         gastos_extras,
-                        extra_por_m3,
+                        precio_por_m3,
                         total_flete_bs,
                         utilidad_neta_bs,
                         observaciones
