@@ -60,12 +60,12 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    pago_por_madera = volumen_m3 * 18.0
+                    pago_por_madera = volumen_m3
                     total_flete_bs = pago_por_madera
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
                     desgaste_aceite_bs = distancia_km * COSTO_ACEITE_POR_KM
                     total_mantenimiento_preventivo = desgaste_llantas_bs + desgaste_aceite_bs
-                    gasto_diesel_bs = litros_diesel * PRECIO_DIESEL_POR_LITRO
+                    gasto_diesel_bs = litros_diesel * PRECIO_DIESEL_POR_LITRO *18.0 
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
                     utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
 
@@ -95,7 +95,7 @@ if opcion_menu == "Formulario de la Secretaria":
                     # Como la hoja está abierta para cualquiera con el enlace como Editor,
                     # usamos la API web de Google para inyectar la fila sin pasar por las llaves RSA rotas.
                     import requests
-                    form_url = URL_DOCUMENTO.replace("/edit", "/values/Hoja 1!A1:append?valueInputOption=USER_ENTERED")
+                    form_url = URL_DOCUMENTO.replace("/edit","/values/Hoja 1!A1:append?valueInputOption=USER_ENTERED")
                     
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
@@ -114,7 +114,7 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             df.columns = [c.strip() for c in df.columns]
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total Distancia", f"{pd.to_numeric(df['Distancia Km'], errors='coerce').sum():,.1f} Km")
+                st.metric("Total Distancia", f"{pd.to_numeric(df['Distancia'], errors='coerce').sum():,.1f} Km")
             with col2:
                 st.metric("Diésel Consumido", f"{pd.to_numeric(df['Litros Diesel'], errors='coerce').sum():,.1f} Ltrs")
             with col3:
