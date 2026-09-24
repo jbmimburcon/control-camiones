@@ -96,6 +96,8 @@ if opcion_menu == "Formulario de la Secretaria":
                     # usamos la API web de Google para inyectar la fila sin pasar por las llaves RSA rotas.
                     import requests
                     form_url = URL_DOCUMENTO.replace("/edit","/values/Hoja 1!A1:append?valueInputOption=USER_ENTERED")
+                    payload =  {"values":[list(nuevo_registro.values())]}
+                    requests.post(form_url, json=payload)
                     
                     st.balloons()
                     st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
