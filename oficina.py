@@ -6,7 +6,7 @@ import gspread
 # ==============================================================================
 # 1. CONFIGURACIONES GENERALES Y DICCIONARIOS (DATOS REALES JORGE)
 # ==============================================================================
-st.set_page_config(page_title="Control de Flota - Concepción", layout="wide", page_icon="🚛")
+        st.set_page_config(page_title="Control de Flota - Concepción", layout="wide", page_icon="🚛")
 
 DICCIONARIO_CHOFERES = {
     "2447-CIN": "Pedro Fernandez",
@@ -45,7 +45,7 @@ opcion_menu = st.sidebar.radio(
 )
 
 if opcion_menu == "Formulario de la Secretaria":
-    st.markdown("# 📝 Acceso Restringido")
+        st.markdown("# 📝 Acceso Restringido")
     contrasena = st.text_input("Ingrese la clave para registrar viajes:", type="password")
     
     if contrasena == "AdminFlota2026":
@@ -150,4 +150,4 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
             
     except Exception as e:
-        st.error(f"Error al cargar reportes: {e}")
+            st.error(f"Error al cargar reportes: {e} ")
