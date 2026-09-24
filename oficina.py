@@ -6,7 +6,7 @@ import gspread
 # ==============================================================================
 # 1. CONFIGURACIONES GENERALES Y DICCIONARIOS (DATOS REALES JORGE)
 # ==============================================================================
-        st.set_page_config(page_title="Control de Flota - Concepción", layout="wide", page_icon="🚛")
+st.set_page_config(page_title="Control de Flota - Concepción", layout="wide", page_icon="🚛")
 
 DICCIONARIO_CHOFERES = {
     "2447-CIN": "Pedro Fernandez",
