@@ -65,7 +65,7 @@ if opcion_menu == "Formulario de la Secretaria":
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
         distancia_txt = st.text_input("Distancia del viaje:", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
-        extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
+        precio_m3_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
 
         try:
@@ -73,13 +73,14 @@ if opcion_menu == "Formulario de la Secretaria":
             distancia_km = float(distancia_txt.replace(",", ".")) if distancia_txt.strip() else 0.0
             litros_diesel = float(diesel_txt.replace(",", ".")) if diesel_txt.strip() else 0.0
             gastos_extras = float(extras_txt.replace(",", ".")) if extras_txt.strip() else 0.0
+            precio_por_m3 = float(precio_m3_txt.replace(",",".")) if precio_m3_txt.strip() else 280.0
             
             if st.button("Guardar Registro de Viaje"):
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    pago_por_madera = volumen_m3 * 18.0
-                    total_flete_bs = pago_por_madera
+                    
+                    total_flete_bs = volumen_m3 * precio_por_m3
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
                     desgaste_aceite_bs = distancia_km * COSTO_ACEITE_POR_KM
                     total_mantenimiento_preventivo = desgaste_llantas_bs + desgaste_aceite_bs
