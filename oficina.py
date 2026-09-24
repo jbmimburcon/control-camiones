@@ -65,6 +65,7 @@ if opcion_menu == "Formulario de la Secretaria":
         volumen_txt = st.text_input("Volumen transportado (m³):", "0")
         distancia_txt = st.text_input("Distancia del viaje:", "0")
         diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
+        extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         precio_m3_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
         codigo_cfo = st.text_input("Código CFO de la Madera:")
 
