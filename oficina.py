@@ -197,3 +197,16 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
                     Total_Litros_Diesel=('Litros Diesel', 'sum'),
                     Utilidad_Bs=('Utilidad Neta Bs', 'sum')
                 ).reset_index()
+
+                   resumen_placas['Rendimiento_Km_L'] = resumen_placas['Km_Recorridos'] / resumen_placas['Total_Litros_Diesel']
+                resumen_placas['Consumo_L_por_m3'] = resumen_placas['Total_Litros_Diesel'] / resumen_placas['Madera_m3_Traida']
+                
+                resumen_placas.fillna(0, inplace=True)
+                resumen_placas.replace([float('inf'), float('-inf')], 0, inplace=True)
+                
+                st.dataframe(
+                    resumen_placas.style.format({
+                        "Madera_m3_Traida": "{:,.1f} m³",
+                        "Km_Recorridos": "{:,.1f} Km",
+                        "Total_Litros_Diesel": "{:,.1f} Ltrs",
+                        "Utilidad_Bs": "{:,.2f} Bs",
