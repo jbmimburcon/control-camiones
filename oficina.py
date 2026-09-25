@@ -18,6 +18,8 @@ DICCIONARIO_CHOFERES = {
 COSTO_LLANTA_POR_KM = 0.60
 COSTO_ACEITE_POR_KM = 0.20
 PRECIO_DIESEL_POR_LITRO = 18.0
+
+# MANTENIDO EXACTAMENTE IGUAL A TU VERSIÓN CORREGIDA TRAS LOS 2 DÍAS DE TRABAJO
 ID_HOJA_CALCULO = "1fNfxOGdGwwcr8Fn12u2FUIAQ9rB9TZYL5kEUrAWlYEM"
 
 def conectar_base_datos():
@@ -35,6 +37,19 @@ def conectar_base_datos():
     }
     client = gspread.service_account_from_dict(creds_dict)
     return client.open_by_key(ID_HOJA_CALCULO).get_worksheet(0)
+
+# Funciones de control de estado para limpiar el formulario de forma efectiva
+def limpiar_formulario():
+    st.session_state.volumen = "0"
+    st.session_state.distancia = "0"
+    st.session_state.diesel = "0"
+    st.session_state.extras = "0"
+    st.session_state.precio_flete = "280"
+    st.session_state.cfo = ""
+    st.session_state.obs = ""
+
+if "volumen" not in st.session_state:
+    limpiar_formulario()
 
 # ==============================================================================
 # 2. CREACIÓN DEL MENÚ DE NAVEGACIÓN
@@ -57,17 +72,20 @@ if opcion_menu == "Formulario de la Secretaria":
         placa_seleccionada = st.selectbox("Seleccione la Placa del Camión:", lista_placas)
         chofer_assigned = DICCIONARIO_CHOFERES[placa_seleccionada]
         acoplado = st.checkbox("¿Lleva Acoplado?")
-        observaciones = st.text_area("Observaciones del viaje:")
         
-        st.success(f"👤 Chofer asignado: {chofer_assigned}")
+        # Variación del pago según acoplado solicitado
+        pago_chofer = 450.0 if acoplado else 350.0
+        st.success(f"👤 Chofer asignado: {chofer_assigned} | 💵 Pago Chofer calculado: {pago_chofer} Bs")
         st.divider()
 
-        volumen_txt = st.text_input("Volumen transportado (m³):", "0")
-        distancia_txt = st.text_input("Distancia del viaje:", "0")
-        diesel_txt = st.text_input("Litros de Diésel cargados:", "0")
-        extras_txt = st.text_input("Gastos extras adicionales (Bs):", "0")
-        precio_m3_txt = st.text_input("Precio por m3 del flete (Bs):", "0")
-        codigo_cfo = st.text_input("Código CFO de la Madera:")
+        # Enlazados mediante 'key' a session_state para permitir su vaciado inmediato
+        volumen_txt = st.text_input("Volumen transportado (m³):", key="volumen")
+        distancia_txt = st.text_input("Distancia del viaje:", key="distancia")
+        diesel_txt = st.text_input("Litros de Diésel cargados:", key="diesel")
+        extras_txt = st.text_input("Gastos extras adicionales (Bs):", key="extras")
+        precio_m3_txt = st.text_input("Precio por m3 del flete (Bs):", key="precio_flete")
+        codigo_cfo = st.text_input("Código CFO de la Madera:", key="cfo")
+        observaciones = st.text_area("Observaciones del viaje:", key="obs")
 
         try:
             volumen_m3 = float(volumen_txt.replace(",", ".")) if volumen_txt.strip() else 0.0
@@ -80,14 +98,15 @@ if opcion_menu == "Formulario de la Secretaria":
                 if not codigo_cfo:
                     st.error("⚠️ Por favor, ingrese el Código CFO de la Madera antes de guardar.")
                 else:
-                    
                     total_flete_bs = volumen_m3 * precio_por_m3
                     desgaste_llantas_bs = distancia_km * COSTO_LLANTA_POR_KM
                     desgaste_aceite_bs = distancia_km * COSTO_ACEITE_POR_KM
                     total_mantenimiento_preventivo = desgaste_llantas_bs + desgaste_aceite_bs
                     gasto_diesel_bs = litros_diesel * PRECIO_DIESEL_POR_LITRO
                     extra_por_m3 = gastos_extras / volumen_m3 if volumen_m3 > 0 else 0.0
-                    utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras)
+                    
+                    # Se incluye el descuento del pago variable del chofer en el cálculo analítico
+                    utilidad_neta_bs = total_flete_bs - (total_mantenimiento_preventivo + gasto_diesel_bs + gastos_extras + pago_chofer)
 
                     hoja = conectar_base_datos()
                     nuevo_registro = [
@@ -109,8 +128,12 @@ if opcion_menu == "Formulario de la Secretaria":
                         observaciones
                     ]
                     hoja.append_row(nuevo_registro, value_input_option="USER_ENTERED")
+                    
+                    # Forzar vaciado de inputs tras guardar exitosamente
+                    limpiar_formulario()
                     st.balloons()
-                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo.")
+                    st.success("✅ ¡Viaje guardado! Flete registrado correctamente en tu hoja de cálculo y formulario limpio.")
+                    st.rerun()
         except Exception as e:
             st.error(f"❌ Error al guardar. Detalles del sistema: {e}")
     else:
@@ -119,7 +142,7 @@ if opcion_menu == "Formulario de la Secretaria":
 
 elif opcion_menu == "Panel del Dueño (Reportes)":
     st.markdown("# 📊 Panel de Control y Rendimiento")
-    st.markdown("### Información en tiempo real del consumo de combustible y ganancias.")
+    st.markdown("### Resumen semanal y comparación analítica de eficiencia de las 4 placas.")
     
     try:
         hoja = conectar_base_datos()
@@ -129,28 +152,48 @@ elif opcion_menu == "Panel del Dueño (Reportes)":
             df = pd.DataFrame(datos)
             df.columns = [c.strip() for c in df.columns]
             
+            # Formateo y limpieza de datos para cálculo
+            df['Fecha'] = pd.to_datetime(df['Fecha'], errors='coerce')
             df['Distancia'] = pd.to_numeric(df['Distancia'], errors='coerce').fillna(0)
             df['Litros Diesel'] = pd.to_numeric(df['Litros Diesel'], errors='coerce').fillna(0)
+            df['Volumen m3'] = pd.to_numeric(df['Volumen m3'], errors='coerce').fillna(0)
+            df['Gasto Diesel Bs'] = pd.to_numeric(df['Gasto Diesel Bs'], errors='coerce').fillna(0)
+            df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
             
-            if 'Utilidad Neta Bs' in df.columns:
-                df['Utilidad Neta Bs'] = pd.to_numeric(df['Utilidad Neta Bs'], errors='coerce').fillna(0)
-                utilidad_total = df['Utilidad Neta Bs'].sum()
+            # FILTRO SEMANAL PERSONALIZABLE (Por defecto carga los últimos 7 días)
+            st.sidebar.markdown("### 📅 Filtro de Reporte")
+            hoy = datetime.date.today()
+            hace_una_semana = hoy - datetime.timedelta(days=7)
+            rango_fechas = st.sidebar.date_input("Seleccione Rango de Fechas:", [hace_una_semana, hoy])
+            
+            # Validar que el rango esté completo antes de filtrar
+            if isinstance(rango_fechas, list) or isinstance(rango_fechas, tuple):
+                if len(rango_fechas) == 2:
+                    fecha_ini, fecha_fin = rango_fechas
+                    df_filtrado = df[(df['Fecha'].dt.date >= fecha_ini) & (df['Fecha'].dt.date <= fecha_fin)]
+                else:
+                    df_filtrado = df
             else:
-                utilidad_total = 0.0
-            
+                df_filtrado = df
+
+            # KPIs del Periodo Filtrado
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total Distancia", f"{df['Distancia'].sum():,.1f} Km")
+                st.metric("Total Distancia", f"{df_filtrado['Distancia'].sum():,.1f} Km")
             with col2:
-                st.metric("Diésel Consumido", f"{df['Litros Diesel'].sum():,.1f} Ltrs")
+                st.metric("Diésel Consumido", f"{df_filtrado['Litros Diesel'].sum():,.1f} Ltrs")
             with col3:
-                st.metric("Utilidad Total", f"{utilidad_total:,.2f} Bs")
+                st.metric("Utilidad en el Periodo", f"{df_filtrado['Utilidad Neta Bs'].sum():,.2f} Bs")
                 
             st.divider()
-            st.subheader("📋 Historial Completo de Viajes")
-            st.dataframe(df)
-        else:
-            st.info("💡 Aún no hay registros de viajes guardados para mostrar.")
             
-    except Exception as e:
-        st.error(f"Error al cargar reportes: {e}")
+            # TABLA COMPARATIVA ENTRE LAS CUATRO PLACAS
+            st.subheader("⚔️ Análisis de Desempeño por Camión")
+            if not df_filtrado.empty:
+                resumen_placas = df_filtrado.groupby('Placa').agg(
+                    Viajes_Totales=('Placa', 'count'),
+                    Madera_m3_Traida=('Volumen m3', 'sum'),
+                    Km_Recorridos=('Distancia', 'sum'),
+                    Total_Litros_Diesel=('Litros Diesel', 'sum'),
+                    Utilidad_Bs=('Utilidad Neta Bs', 'sum')
+                ).reset_index()
